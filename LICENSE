@@ -1,0 +1,30 @@
+Elementary Differential Equations with Boundary Value Problems
+Copyright (C) 2013 William F. Trench
+
+This work — the LaTeX source distribution in trench-distro/ and the HTML web
+edition generated from it — is licensed under the Creative Commons
+Attribution-NonCommercial-ShareAlike 3.0 Unported License, the license the
+author applied to the Free Edition:
+
+    https://creativecommons.org/licenses/by-nc-sa/3.0/
+
+From the book's own title page:
+
+    This book has been judged to meet the evaluation criteria set by the
+    Editorial Board of the American Institute of Mathematics in connection
+    with the Institute's Open Textbook Initiative. It may be copied,
+    modified, redistributed, translated, and built upon subject to the
+    Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported
+    License.
+
+and from its copyright page:
+
+    This book was published previously by Brooks/Cole Thomson Learning, 2001.
+    This free edition is made available in the hope that it will be useful as
+    a textbook or reference. Reproduction is permitted for any valid
+    noncommercial educational, mathematical, or scientific purpose. However,
+    charges for profit beyond reasonable printing costs are prohibited.
+
+The build tooling in this repository (lib/, scripts/, assets/, and the Eleventy
+templates) is distributed under the same terms so that the repository may be
+redistributed as a whole.

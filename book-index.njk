@@ -1,0 +1,46 @@
+---
+permalink: /book-index.html
+layout: page
+title: Index
+eleventyExcludeFromCollections: true
+---
+
+{# The book's own back-of-book index. Its page references were \pageref{...} to
+   labels, so each one links to the exact equation, theorem, example or exercise
+   rather than to a page number. #}
+<article class="book-index">
+  <nav class="index-letters" aria-label="Index navigation">
+    {% for group in book.bookIndex %}
+      <a href="#index-{{ group.letter }}">{{ group.letter }}</a>
+    {% endfor %}
+  </nav>
+
+  {% for group in book.bookIndex %}
+    <section id="index-{{ group.letter }}">
+      <h2>{{ group.letter }}</h2>
+      <ul class="index-entries">
+        {% for entry in group.entries %}
+          <li>
+            {{ entry.html | safe }}
+            {% if entry.subs.length %}
+              <ul>
+                {% for sub in entry.subs %}
+                  <li>
+                    {{ sub.html | safe }}
+                    {% if sub.subs.length %}
+                      <ul>
+                        {% for subsub in sub.subs %}
+                          <li>{{ subsub.html | safe }}</li>
+                        {% endfor %}
+                      </ul>
+                    {% endif %}
+                  </li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endfor %}
+</article>

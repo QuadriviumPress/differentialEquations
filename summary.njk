@@ -1,0 +1,40 @@
+---
+permalink: /SUMMARY.html
+layout: page
+title: Elementary Differential Equations
+eleventyExcludeFromCollections: true
+---
+
+{# The book-viewer fetches this page, takes the first <ul>, and uses its first
+   nested <ul> as the sidebar TOC (li children become the sidebar entries).
+   Numbers are embedded in the link text (not CSS counters) because the preface
+   and back matter interleave with numbered chapters. #}
+<ul>
+  <li>{{ site.title }}
+    <ul class="toc-root">
+      <li class="preface"><a href="/preface/">Preface</a></li>
+      {% for ch in book.chapters %}
+        <li class="chapter">
+          <a href="{{ ch.url }}">{{ ch.displayTitle }}</a>
+          {% if ch.sections.length %}
+            <ul>
+              {% for s in ch.sections %}
+                <li class="section"><a href="{{ s.url }}">{{ s.displayTitle }}</a></li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </li>
+      {% endfor %}
+      <li class="appendix"><a href="/table-of-integrals/">A Brief Table of Integrals</a></li>
+      <li class="answers">
+        <a href="{{ book.answerPages[0].url }}">{{ book.answersTitle }}</a>
+        <ul>
+          {% for pg in book.answerPages %}
+            <li class="section"><a href="{{ pg.url }}">{{ pg.displayTitle }}</a></li>
+          {% endfor %}
+        </ul>
+      </li>
+      <li class="book-index"><a href="/book-index.html">Index</a></li>
+    </ul>
+  </li>
+</ul>

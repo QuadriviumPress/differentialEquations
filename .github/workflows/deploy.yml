@@ -1,0 +1,126 @@
+# Workflow for building and deploying the Eleventy site to GitHub Pages.
+#
+# Sequence: figures + Eleventy build -> verify -> chapter PDFs via Playwright
+# (served from the first build) -> second Eleventy build so the PDF download
+# links appear -> re-verify -> deploy.
+#
+# One-time repo setup: Settings -> Pages -> Source = "GitHub Actions".
+name: Deploy Eleventy site to Pages
+
+on:
+  # Runs on pushes targeting the main branch
+  push:
+    branches: ["main"]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # Build job
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      # Ubuntu 24.04+: install dvisvgm explicitly (not a hard dep of
+      # texlive-binaries) and mupdf-tools (mutool) so dvisvgm can process
+      # PDF re-distills under Ghostscript ≥ 10.01.
+      - name: Install EPS -> SVG toolchain
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ghostscript dvisvgm mupdf-tools texlive-binaries texlive-base
+
+      - name: Cache converted figures
+        uses: actions/cache@v4
+        with:
+          path: generated/figures
+          key: figures-v1-${{ hashFiles('trench-distro/EPS/*.eps') }}
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      # assets/js/mathjax/ (MathJax v4 bundle + newcm fonts) and
+      # assets/js/vendor/ (MiniSearch) are git-ignored and must be populated
+      # from node_modules before every build.
+      - name: Copy self-hosted MathJax + MiniSearch bundles
+        run: npm run update:vendor
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v6
+
+      - name: Build with Eleventy (figures + search index)
+        run: npm run build
+
+      - name: Verify build
+        run: npm run verify
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Generate chapter PDFs
+        uses: ./.github/actions/generate-chapter-pdfs
+
+      # Second build: chapter landing pages now emit their PDF download links
+      # (assets/pdf/ is populated), and the search index is rebuilt.
+      - name: Rebuild with PDF download links
+        run: npm run build
+
+      - name: Re-verify build
+        run: npm run verify
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+      - name: Write build summary
+        if: always()
+        run: |
+          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Status** | ${{ job.status == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Chapter PDFs** | $(ls -1 assets/pdf/*.pdf 2>/dev/null | wc -l) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Triggered by** | ${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+
+  # Deployment job
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
+
+      - name: Write deployment summary
+        if: always()
+        run: |
+          echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Status** | ${{ job.status == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Site URL** | ${{ steps.deployment.outputs.page_url }} |" >> $GITHUB_STEP_SUMMARY

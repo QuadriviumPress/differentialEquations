@@ -1,0 +1,30 @@
+---
+title: Home
+layout: default
+---
+
+<div class="landing">
+  <h1 class="page-title">{{ site.title }}</h1>
+  <p><em>{{ site.tagline }}</em></p>
+  <p>{{ site.description }}</p>
+  <p>
+    This is the web edition of the free open textbook by {{ site.author }} (Trinity
+    University), rendered from the author's own LaTeX source. It is licensed
+    <a href="{{ site.licenseUrl }}" rel="license">{{ site.licenseName }}</a>; the
+    <a href="{{ site.sourceUrl }}">author's edition of record</a> is Free Edition 1.01
+    (December 2013). Chapter, section, equation, theorem, example and exercise numbers
+    match that edition exactly.
+  </p>
+
+  <div class="landing-actions">
+    <a href="/preface/">Start reading</a>
+    <a class="secondary" href="/book-index.html">Index</a>
+  </div>
+
+  <h2>Contents</h2>
+  <ol class="chapter-list">
+    {% for ch in book.chapters %}
+      <li><a href="{{ ch.url }}">{{ ch.displayTitle }}</a></li>
+    {% endfor %}
+  </ol>
+</div>

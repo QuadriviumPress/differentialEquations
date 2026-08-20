@@ -1,0 +1,20 @@
+<hr />
+<footer>
+  <em>{{ site.title }}</em> ({{ site.tagline }}), Free Edition 1.01. &copy; 2013
+  <a href="{{ site.sourceUrl }}" target="_blank" rel="noopener">{{ site.author }}</a>, licensed
+  under
+  <a href="{{ site.licenseUrl }}" rel="license" target="_blank">{{ site.licenseName }}</a>.
+  This web edition is generated from the author's LaTeX source and is
+  <a href="{{ site.repositoryUrl }}" target="_blank" rel="noopener">available on GitHub</a>.
+</footer>
+
+<script>
+  // Offline support (sw.njk). Book.baseHref carries the deployment's path
+  // prefix without a trailing slash, so this resolves for both GitHub Pages
+  // and root hosting.
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register(window.Book.baseHref + '/sw.js');
+    });
+  }
+</script>

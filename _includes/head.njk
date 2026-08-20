@@ -1,0 +1,51 @@
+<head>
+  <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+
+  <meta content="{{ site.description }}" name="description" />
+  <meta content="Differential Equations, Mathematics, Open Textbook, Laplace Transforms, Fourier Series, Boundary Value Problems, Linear Systems" name="keywords" />
+  <meta content="{{ site.author }}" name="author" />
+
+  <!-- Enable responsiveness on mobile devices-->
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=6" name="viewport" />
+
+  <meta name="theme-color" content="#1f4e79" />
+
+  <link href="/manifest.webmanifest" rel="manifest" />
+  <link href="/assets/icons/icon-192.png" rel="apple-touch-icon" />
+
+  <title>
+    {% if title == "Home" %}{{ site.title }} &middot; {{ site.tagline }}{% else %}{{ title }}{% endif %}
+  </title>
+
+  {# Asset URLs are plain root-relative; the pathPrefix transform prepends the prefix at
+     build. Do NOT also pipe through | url here — that double-prefixes. #}
+  <!-- CSS -->
+  <link href="/assets/css/theme.css" rel="stylesheet" />
+  <link href="/assets/css/book.css" rel="stylesheet" />
+  <link href="/assets/css/print.css" rel="stylesheet" media="print" />
+
+  <!-- MathJax Configuration (must load before MathJax itself); the generated
+       macro table must in turn load before the configuration that reads it. -->
+  <script src="/assets/js/tex-macros.js" type="text/javascript"></script>
+  <script src="/assets/js/math-config.js" type="text/javascript"></script>
+  <script defer id="MathJax-script" src="/assets/js/mathjax/tex-chtml.js"></script>
+
+  {# Script-body values are NOT rewritten by the pathPrefix transform (attributes only),
+     so | url is required here to apply the pathPrefix exactly once. #}
+  <script type="text/javascript">
+    window.Book = {
+      url: '{{ site.repositoryUrl }}',
+      rootUrl: '{{ "/" | url | trimSlash }}',
+      baseHref: '{{ "/" | url | trimSlash }}',
+      toc: { url: '{{ "/SUMMARY.html" | url }}' },
+    };
+  </script>
+
+  <!-- Import the JavaScript module -->
+  <!-- Order is important -->
+  <script type="module" src="/assets/js/book-config.js"></script>
+  <script type="module" src="/assets/js/util.js"></script>
+  <script type="module" src="/assets/js/book-viewer.js"></script>
+  <script type="module" src="/assets/js/search.js"></script>
+  <script type="module" src="/assets/js/search-ui.js"></script>
+</head>

@@ -1,0 +1,9 @@
+trench-distro
+lib
+scripts
+generated
+assets
+_site
+pdf-output
+README.md
+LICENSE

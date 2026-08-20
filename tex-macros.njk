@@ -1,0 +1,10 @@
+---js
+{
+  permalink: '/assets/js/tex-macros.js',
+  eleventyExcludeFromCollections: true,
+}
+---
+// Generated at build time from wtrench.sty and the book preamble — see
+// lib/model/macros.js. Loaded before math-config.js, which passes these to
+// MathJax as tex.macros so the book's own macros typeset exactly as in LaTeX.
+window.TrenchTeXMacros = {{ book.macrosJson | safe }};

@@ -1,0 +1,71 @@
+# CI for pull requests: convert figures, build the Eleventy site from the
+# LaTeX source, and run the post-build verification (page set, link/fragment
+# integrity, figure existence, numbering sequences, LaTeX leaks, search index,
+# book index, PWA shell).
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Cancel redundant CI runs on the same PR
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build & Verify (Eleventy)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      # dvisvgm + ghostscript convert EPS→SVG. On Ubuntu 24.04+:
+      # - dvisvgm is a separate package (only recommends of texlive-binaries)
+      # - GS ≥ 10.01 needs mutool (mupdf-tools) for dvisvgm's PDF fallback path
+      - name: Install EPS -> SVG toolchain
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ghostscript dvisvgm mupdf-tools texlive-binaries texlive-base
+
+      - name: Cache converted figures
+        uses: actions/cache@v4
+        with:
+          path: generated/figures
+          key: figures-v1-${{ hashFiles('trench-distro/EPS/*.eps') }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      # assets/js/mathjax/ (MathJax v4 bundle + newcm fonts) and
+      # assets/js/vendor/ (MiniSearch) are git-ignored and must be populated
+      # from node_modules before every build.
+      - name: Copy self-hosted MathJax + MiniSearch bundles
+        run: npm run update:vendor
+
+      - name: Build with Eleventy (figures + search index)
+        run: npm run build
+
+      - name: Verify build
+        run: npm run verify
+
+      - name: Write build summary
+        if: always()
+        run: |
+          echo "## CI Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Build + Verify** | ${{ job.status == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Triggered by** | ${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
